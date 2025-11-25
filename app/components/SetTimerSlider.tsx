@@ -69,7 +69,8 @@ export default function SetTimerSlider({
       return;
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e: PointerEvent) => {
+      e.preventDefault();
       if (isClicked) {
         const element = document.getElementById("scrollbar");
         const left = element?.getBoundingClientRect().left ?? 0.1;
@@ -79,7 +80,8 @@ export default function SetTimerSlider({
         progress.set(clamped);
       }
     };
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: PointerEvent) => {
+      e.preventDefault();
       if (isClicked) {
         setIsClicked(false);
         const value = progress.get();
@@ -95,12 +97,23 @@ export default function SetTimerSlider({
         });
       }
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("pointermove", handleMouseMove);
+    window.addEventListener("pointerup", handleMouseUp);
+    window.addEventListener(
+      "pointercancel",
+      (e) => {
+        e.preventDefault();
+        setIsClicked(false);
+      },
+      { passive: false }
+    );
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("pointermove", handleMouseMove);
+      window.removeEventListener("pointerup", handleMouseUp);
+      window.removeEventListener("pointercancel", (e) => {
+        setIsClicked(false);
+      });
     };
   }, [isClicked]);
 
@@ -217,12 +230,11 @@ export default function SetTimerSlider({
       </AnimatePresence>
       <motion.div
         id="scrollbar"
-        onMouseDown={(e) => {
+        onPointerDown={(e) => {
           e.preventDefault();
           setIsClicked(true);
-          console.log("clicked");
         }}
-        className="bg-neutral-400/19 backdrop-blur-3xl w-full h-full overflow-hidden rounded-2xl relative "
+        className="bg-neutral-400/19 backdrop-blur-3xl w-full h-full overflow-hidden rounded-2xl relative touch-none"
       >
         <AnimatePresence>
           {progressNum < 100 ? (

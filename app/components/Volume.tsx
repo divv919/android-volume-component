@@ -34,6 +34,7 @@ export default function TwentyFourOne() {
     e: React.MouseEvent<HTMLDivElement>,
     setter: (val: number) => void
   ) {
+    e.preventDefault();
     const rect = e.currentTarget.getBoundingClientRect();
     const clickY = e.clientY - rect.top;
     const percentage = 100 - Math.round((clickY / rect.height) * 100);
@@ -41,8 +42,11 @@ export default function TwentyFourOne() {
   }
 
   useEffect(() => {
-    function handleMove(e: MouseEvent) {
+    function handleMove(e: PointerEvent) {
       if (!activeBar) return;
+
+      // Prevent default to stop scrolling/zooming on mobile
+      e.preventDefault();
 
       const bar = document.getElementById(activeBar);
       if (!bar) return;
@@ -66,11 +70,30 @@ export default function TwentyFourOne() {
       setActiveBar(null);
     }
 
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseup", stopDragging);
+    function handlePointerUp(e: PointerEvent) {
+      e.preventDefault();
+      stopDragging();
+    }
+
+    function handlePointerCancel(e: PointerEvent) {
+      e.preventDefault();
+      stopDragging();
+    }
+
+    if (activeBar) {
+      // Prevent default touch behaviors
+      window.addEventListener("pointermove", handleMove, { passive: false });
+      window.addEventListener("pointerup", handlePointerUp, { passive: false });
+      window.addEventListener("pointercancel", handlePointerCancel, {
+        passive: false,
+      });
+      window.addEventListener("mouseup", stopDragging);
+    }
 
     return () => {
-      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerCancel);
       window.removeEventListener("mouseup", stopDragging);
     };
   }, [activeBar]);
@@ -139,8 +162,13 @@ export default function TwentyFourOne() {
                 layoutId="bar-layout"
                 onClick={(e) => handleBarClick(e, setVolumeProgress)}
                 onMouseDown={() => setActiveBar("Vol")}
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  setActiveBar("Vol");
+                }}
+                // onTouchStart={() => setActiveBar("Vol")}
                 id="Vol"
-                className="rounded-2xl w-12 relative bg-neutral-100/10 backdrop-blur-sm overflow-hidden"
+                className="rounded-2xl w-12 relative bg-neutral-100/10 backdrop-blur-sm overflow-hidden touch-none"
               >
                 <AnimatePresence>
                   {volumeProgress > 0 && volumeProgress < 40 ? (
@@ -227,7 +255,11 @@ export default function TwentyFourOne() {
                 id="Bell"
                 onClick={(e) => handleBarClick(e, setBellProgress)}
                 onMouseDown={() => setActiveBar("Bell")}
-                className="rounded-2xl w-12 relative bg-neutral-100/10 backdrop-blur-sm overflow-hidden"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  setActiveBar("Bell");
+                }}
+                className="rounded-2xl w-12 relative bg-neutral-100/10 backdrop-blur-sm overflow-hidden touch-none"
               >
                 <AnimatePresence>
                   {bellProgress > 0 && bellProgress < 40 && !isMute ? (
@@ -317,7 +349,11 @@ export default function TwentyFourOne() {
                 id="Alarm"
                 onClick={(e) => handleBarClick(e, setAlarmProgress)}
                 onMouseDown={() => setActiveBar("Alarm")}
-                className="rounded-2xl w-12 relative bg-neutral-100/10 backdrop-blur-sm overflow-hidden"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  setActiveBar("Alarm");
+                }}
+                className="rounded-2xl w-12 relative bg-neutral-100/10 backdrop-blur-sm overflow-hidden touch-none"
               >
                 <AnimatePresence>
                   {alarmProgress > 0 ? (
@@ -540,8 +576,13 @@ export default function TwentyFourOne() {
                 layoutId="bar-layout"
                 onClick={(e) => handleBarClick(e, setVolumeProgress)}
                 onMouseDown={() => setActiveBar("Vol")}
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  setActiveBar("Vol");
+                }}
+                // onTouchStart={() => setActiveBar("Vol")}
                 id="Vol"
-                className="rounded-2xl w-11 relative bg-neutral-500/30  backdrop-blur-md overflow-hidden"
+                className="rounded-2xl w-11 relative bg-neutral-500/30  backdrop-blur-md overflow-hidden touch-none"
               >
                 <div
                   onClick={(e) => {
@@ -764,17 +805,67 @@ export default function TwentyFourOne() {
       </AnimatePresence>
 
       <div className="flex items-center w-full justify-center h-full gap-2 mt-40">
-        <button
+        <motion.button
+          whileTap={{
+            scale: 0.9,
+          }}
           disabled={throttleWorking}
-          className="disabled:bg-neutral-500 disabled:cursor-auto transition-colors duration-300 ease-in-out select-none cursor-pointer bg-neutral-100 tracking-tight text-sm font-medium text-neutral-800 px-2 py-2 rounded-2xl w-fit"
+          className=" disabled:bg-neutral-500 relative disabled:cursor-auto transition-all duration-100 ease-in-out select-none cursor-pointer bg-neutral-100 tracking-tight text-sm font-medium text-neutral-800  rounded-2xl w-20 h-10"
           onClick={() => {
             setThrottleWorking(true);
-            setTimeout(() => setThrottleWorking(false), 400);
+            setTimeout(() => setThrottleWorking(false), 700);
             setSectionState((prev) => (prev === "Hidden" ? "Open" : "Hidden"));
           }}
         >
-          {sectionState === "Hidden" ? "Trigger" : "Remove"}
-        </button>
+          <AnimatePresence>
+            {sectionState === "Hidden" ? (
+              <motion.div
+                className="absolute top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2"
+                key={"trigger-btn"}
+                initial={{
+                  opacity: 0,
+                  filter: "blur(2px)",
+                }}
+                animate={{
+                  opacity: 1,
+                  filter: "blur(0px)",
+                }}
+                exit={{
+                  opacity: 0,
+                  filter: "blur(2px)",
+                }}
+                transition={{
+                  duration: 0.3,
+                }}
+              >
+                {"Trigger"}
+              </motion.div>
+            ) : (
+              <motion.div
+                className="absolute top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2"
+                key={"remove-btn"}
+                initial={{
+                  opacity: 0,
+                  filter: "blur(2px)",
+                }}
+                animate={{
+                  opacity: 1,
+                  filter: "blur(0px)",
+                }}
+                exit={{
+                  opacity: 0,
+
+                  filter: "blur(2px)",
+                }}
+                transition={{
+                  duration: 0.3,
+                }}
+              >
+                {"Remove"}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </div>
     </motion.div>
   );
