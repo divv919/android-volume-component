@@ -582,7 +582,7 @@ export default function TwentyFourOne() {
                 }}
                 // onTouchStart={() => setActiveBar("Vol")}
                 id="Vol"
-                className="rounded-2xl w-11 relative bg-neutral-500/30  backdrop-blur-md overflow-hidden touch-none"
+                className="rounded-2xl  w-11 relative bg-neutral-500/30  backdrop-blur-md overflow-hidden touch-none"
               >
                 <div
                   onClick={(e) => {
@@ -697,7 +697,7 @@ export default function TwentyFourOne() {
                       scale: 0.95,
                     }}
                     className={cn(
-                      "transition-colors relative ease-in-out duration-150 bg-neutral-500/35 backdrop-blur-md shrink-0 rounded-2xl flex justify-center items-center w-[44px] h-[33px]",
+                      "transition-colors cursor-pointer relative ease-in-out duration-150 bg-neutral-500/35 backdrop-blur-md shrink-0 rounded-2xl flex justify-center items-center w-[44px] h-[33px]",
                       isMute && " bg-blue-600 "
                     )}
                     style={{
@@ -790,7 +790,7 @@ export default function TwentyFourOne() {
                   }}
                   onClick={() => setIsDND((prev) => !prev)}
                   className={cn(
-                    "transition-colors relative ease-in-out duration-150 bg-neutral-500/35  backdrop-blur-md shrink-0 rounded-2xl flex justify-center items-center w-[44px] h-[33px]",
+                    "transition-colors cursor-pointer relative ease-in-out duration-150 bg-neutral-500/35  backdrop-blur-md shrink-0 rounded-2xl flex justify-center items-center w-[44px] h-[33px]",
                     isDND && " bg-blue-600 "
                   )}
                 >
